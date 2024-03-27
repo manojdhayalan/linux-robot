@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.containers.name }}
+  labels:
+    app: {{ .Values.containers.name }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.containers.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.containers.name }}
+    spec:
+      containers:
+        - name: {{ .Values.containers.name }}
+          image: "{{ .Values.image.repository }}{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          securityContext:
+            privileged: false
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: ORCHESTRATOR_URL
+            value: {{ .Values.orchestrator.url }}
+          - name: CLIENT_ID
+            value: {{ .Values.orchestrator.clientId }}
+          - name: CLIENT_SECRET
+            value: {{ .Values.orchestrator.clientSecret }}
+          - name: LICENSE_AGREEMENT
+            value: accept
+          #- name: VNC_ENABLED
+           # value: "true"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
